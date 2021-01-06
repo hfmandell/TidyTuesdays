@@ -1,0 +1,30 @@
+---
+title: "big-mac.rmd"
+author: "Hannah Mandell"
+date: "1/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+# install.packages("tidytuesdayR")
+```
+
+```{r}
+library(tidytuesdayR)
+tuesdata <- tidytuesdayR::tt_load('2020-12-22')
+# or tuesdata <- tidytuesdayR::tt_load(2020, week = 52)
+
+## this weeks TidyTuesday!
+tidytuesdayR::use_tidytemplate()
+
+## TidyTuesday from Week 42 of 2019
+tidytuesdayR::use_tidytemplate(refdate = '2021-01-05')
+
+big-mac <- tuesdata$'big-mac'
+
+```
+
