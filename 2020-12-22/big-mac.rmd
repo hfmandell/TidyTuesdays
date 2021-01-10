@@ -10,21 +10,150 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r packages}
-# install.packages("tidytuesdayR")
+library(tidyverse)
+library(tidytuesdayR)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(plotly)
 ```
 
-```{r}
-library(tidytuesdayR)
+Thank you Prof. Jo Hardin for walking through this. 
+
+```{r loading the data}
 tuesdata <- tidytuesdayR::tt_load('2020-12-22')
 # or tuesdata <- tidytuesdayR::tt_load(2020, week = 52)
 
 ## this weeks TidyTuesday!
-tidytuesdayR::use_tidytemplate()
+#tidytuesdayR::use_tidytemplate()
 
-## TidyTuesday from Week 42 of 2019
-tidytuesdayR::use_tidytemplate(refdate = '2021-01-05')
+bigmac <- tuesdata$'big-mac'
 
-big-mac <- tuesdata$'big-mac'
+#save the data in a csv file
+write_csv(bigmac, "big-mac.csv")
+```
+
+
+```{r looking at the country counts}
+bigmac %>%
+  group_by(name) %>%
+  summarize(count = n())
+```
+We notice that most of the countries have 33 observations, but some only have as little as 5.
+What is `Euro Area?`. Countries like Germany and Austria are missing, so it could potentially be a combinatino of European countries.
+Finally, it should be noted that both `UAE` and `United Arab Emirates` are included. What is the reasoning behind these labels?
+
+```{r looking at a few countries in particular}
+bigmacW <- bigmac %>%
+  filter(name %in% c("Australia", "Canada", "United States", "Britain", "Euro area"))
+
+bigmacW %>%
+  group_by(name) %>%
+  summarize(count = n())
 
 ```
+
+Let's take a look at Big Mac prices:
+
+```{r All Big Mac prices over time in USD}
+ggplot(bigmac, aes(x = date, y = dollar_price)) +
+  geom_point(aes(color = name)) +
+  geom_smooth(aes(color = name), se = FALSE) +
+  ggtitle("Big Mac Prices in USD")
+```
+
+Let's have a ~bit~ more clarity by limiting which countries are shown:
+
+```{r Subsetting Big Mac prices over time in USD} 
+
+ggplot(bigmacW, aes(x = date, y = dollar_price)) +
+  geom_point(aes(color = name)) + 
+  geom_smooth(aes(color = name), se = FALSE) +
+  xlab("purchase price date") +
+  ggtitle("Big Mac prices in USD")
+```
+
+```{r}
+ggplot(bigmacW, aes(x = date, y = local_price)) +
+  geom_point(aes(color = name)) +
+  geom_smooth(aes(color = name), se=FALSE) +
+  xlab("purchase price date") +
+  ggtitle("Big Mac Prices in local currency")
+```
+
+ECONOMICS
+
+```{r}
+bigmacUS <- bigmac %>%
+  filter(name %in% c("United States")) %>%
+  mutate(local_US_price = local_price) %>%
+  select(date, local_US_price)
+
+bigmac <- full_join(bigmac, bigmacUS, by = "date") %>%
+  mutate(bigmac_exchange = local_price / local_US_price)
+
+bigmac <- bigmac %>%
+  mutate(value = (bigmac_exchange - dollar_ex) / dollar_ex)
+```
+
+The value on the y-axis combines the exchange rate for the Big Macs as well as the value for the exchange rate for the currency.
+
+Let's see if the Big Mac exchange rate and currency exchange rate have reasonable correlation. 
+Note: There are a few countries with enormous exchange rates. They unfortunately skew our ablity to compare the Big Mac exchange rates and USD exchange rate. Therefore, we will filter them our before making our descriptive plot. 
+
+```{r}
+bigmac %>%
+  filter(dollar_ex < 10) %>%
+  ggplot(aes(x = dollar_ex, y = bigmac_exchange)) +
+  geom_point()
+  
+```
+
+```{r}
+ggplot(bigmac, aes(x = date, y = value)) + 
+  geom_point(aplha = 0.2, aes(col = ifelse(value <= 0, "negative", "positive"))) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = filter(bigmac, name == "Britain"), mapping = aes(x = date, y = value), se = FALSE, col = "yellow") +
+  theme(legend.position = "none") +
+  xlab("the Big Mac index") +
+  ggtitle("Big Mac Index, the yellow line is vs Britain") +
+  scale_color_manual(values = c("red", "blue"))
+```
+
+
+Creating interactive lines with `plotly`
+
+```{r}
+test <- ggplot(bigmac, aes(x = date, y=value)) + 
+  geom_point(aplha = 0.2, aes(col = ifelse(value <= 0, "negative", "positive"), text = sprintf("country: %s", name))) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(group = name, text = sprintf("country: %s", name)), se = FALSE, col = "grey") +
+  geom_line(data = filter(bigmac, name == "Britain"), mapping = aes(x = date, y = value), se = FALSE, col = "yellow") +
+  theme(legend.position = "none") +
+  xlab("the Big Mac index") +
+  ggtitle("Big Mac Index, blue line is vs Britian") +
+  scale_color_manual(values=c("red", "blue")) 
+
+ggplotly(test, tooltip = "text")
+
+```
+
+
+```{r}
+base <- plot_ly(highlight_key(bigmac, ~name)) %>%
+  group_by(name)
+
+test2 <- base %>%
+  group_by(name) %>%
+  add_lines(x = ~date, y = ~value) %>%
+  add_markers(x = ~date, y = ~value)
+
+highlight(test2, 
+          on = "plotly_hover", 
+          selective = FALSE, 
+          dynamic = FALSE, 
+          color = "blue", 
+          persistent = FALSE)
+```
+
 
