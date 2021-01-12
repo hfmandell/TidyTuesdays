@@ -1,8 +1,10 @@
 ---
-title: 'Art and Artists'
+title: "Art and Artists"
 author: "Hannah Mandell"
 date: "1/12/2021"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 The data today come from the Tate Art Gallery 
@@ -12,7 +14,7 @@ The data today come from the Tate Art Gallery
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r install packages}
+```{r}
 library(tidyverse)
 library(tidytuesdayR)
 library(lubridate)
@@ -21,8 +23,9 @@ library(tidyr)
 library(broom)
 library(countrycode)
 library(praise)
-
-
+#install.packages("tidymodels")
+library(tidymodels)
+#install.packages("ranger")
 ```
 
 ```{r starting off the day right}
@@ -143,4 +146,58 @@ artartist1 %>%
 
 We see that the relative proportion of female artwork increases as we turn towards modern times. Removing artist # 558 helps remove his skew. 
 
+# Random Forest Model
+Let's explore a RFM. 
 
+```{r}
+set.seed(47)
+library(tidymodels)
+library(vip)
+
+
+# remove the artist that is listed an enormous number of times 
+# because he might skew the data
+artRF <- artartist1 %>%
+  filter(id != 558)
+
+# 75% train, 25% test
+data_split <- initial_split(artRF, prop = 0.75)
+
+
+art_train <- training(data_split)
+
+# for better data science, we would perform more analysis on these
+# individual fields, but removing them is sufficient for our low-stakes 
+# purposes now
+art_test  <- testing(data_split) %>%
+  filter(!is.na(gender)) %>%
+  filter(!is.na(width)) %>%
+  filter(!is.na(height)) %>%
+  filter(!is.na(acquisitionYear)) %>%
+  filter(!is.na(yearOfBirth)) %>%
+  filter(!is.na(yearOfDeath))
+
+# give it the right fields to look at
+# birth and death year might make the model overfit to the training data
+rand_forest(mode = "regression") %>% 
+   set_args(importance = "permutation") %>%
+   fit(year ~ gender + width + height + acquisitionYear +
+         yearOfBirth + yearOfDeath, 
+       data = art_train) %>% 
+   vip::vip() 
+
+```
+We see that the model is relying very heavily on `yearOfBirth` and `yearOfDeath` to make its predictions, as we hypothesized. 
+
+```{r}
+rand_forest(mode = "regression") %>% 
+   fit(year ~ gender + width + height + acquisitionYear +
+         yearOfBirth + yearOfDeath, data = art_train) %>% 
+   predict(new_data = art_test) %>%
+   ggplot(aes(y = .pred, x = art_test$year)) + 
+   geom_point() +
+   geom_abline(intercept = 0, slope = 1) +
+  ylab("Predicted Year") +
+  xlab("Year of Creation")
+```
+The above graph shows that our model has a very high accuracy - probably too accurate.
