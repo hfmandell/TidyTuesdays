@@ -37,7 +37,7 @@ The simplest way is to use the ‘tt_load()’ function. This function has accep
 ```{r load data}
 library(tidytuesdayR)
 # insert desired date
-tt_data <- tt_load("2019-01-15")
+tt_data <- tt_load("2021-01-12")
 
 # or you can use this method:
 tt_data <- tt_load(2019, week = 3)

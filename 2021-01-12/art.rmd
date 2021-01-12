@@ -1,0 +1,146 @@
+---
+title: 'Art and Artists'
+author: "Hannah Mandell"
+date: "1/12/2021"
+output: html_document
+---
+
+The data today come from the Tate Art Gallery 
+(https://github.com/tategallery/collection)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r install packages}
+library(tidyverse)
+library(tidytuesdayR)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(broom)
+library(countrycode)
+library(praise)
+
+
+```
+
+```{r starting off the day right}
+praise()
+```
+
+# Get the Data
+```{r}
+tt_data <- tt_load("2021-01-12")
+
+# make and save csvs
+artwork <- tt_data$artwork
+write_csv(artwork, "artwork.csv")
+artists <- tt_data$artists
+write_csv(artists, "artists.csv")
+
+```
+
+# Preliminary looks at the data
+```{r head}
+head(artwork)
+```
+
+```{r glimpse}
+glimpse(artwork)
+```
+
+```{r }
+head(artists)
+```
+
+```{r}
+glimpse(artists)
+```
+
+Note: over half of the pieces are by Joseph Turner! We might be interested in analyzing the data without his work. 
+
+```{r}
+artwork %>%
+  group_by(artistId) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  head()
+
+artists %>%
+  filter(id == 558)
+  
+
+```
+
+Both `placeofBirth` and `placeofDeath` are given as City, Country. Let's look to split these into different categories - it might make it easier to analyze or model the data. 
+
+```{r splitting city & country by comma}
+artists <- artists %>%
+  separate(placeOfBirth, c("cityBirth", "countryBirth"), sep = ", ", fill = "left") %>%
+  separate(placeOfDeath, c("cityDeath", "countryDeath"), sep = ", ", fill = "left")
+
+artists %>% select(countryBirth) %>% table()
+```
+
+```{r boxplot of country & year of artwork}
+artists %>%
+  group_by(countryBirth) %>%
+  mutate(count = n()) %>%
+  filter(count >= 10) %>%
+  ungroup() %>%
+  ggplot(aes(x = countryBirth, y = yearOfBirth)) +
+  geom_boxplot()
+
+```
+
+
+# Joins!
+Combining datasets with shared unique identifiers:
+Inner Join = keep everything that is shared in both datasets
+Full Union = keep everything from each dataset
+
+Let's combine the datasets so that if we want to use gender to ask questions about the art, the information is available!
+
+```{r}
+artartist1 <- 
+  inner_join(artists, artwork, by = c("id" = "artistId"))
+
+artartist2 <- 
+  full_join(artists, artwork, by = c("id" = "artistId"))
+
+nrow(artwork)
+nrow(artartist1)
+nrow(artartist2)
+  
+```
+Some inportant insights from these runs:
+
+There are 6 pieces of art that do not have a listed artist. They are left out in the intersect. 
+
+There are ALSO 194 artists in the dataset that do not have artwork in the database, and that is why we get MORE data in artartist2 than in artwork itself. 
+
+# Visualization
+
+```{r}
+artwork %>%
+  select(artistRole) %>%
+  table()
+
+#density plot
+artartist1 %>%
+  filter(id != 558) %>%
+  ggplot(aes(x = year, color = gender)) + 
+  geom_density()
+
+#histogram
+artartist1 %>%
+  filter(id != 558) %>%
+  ggplot(aes(x = year, color = gender, fill = gender)) + 
+  geom_histogram()
+  
+```
+
+We see that the relative proportion of female artwork increases as we turn towards modern times. Removing artist # 558 helps remove his skew. 
+
+
