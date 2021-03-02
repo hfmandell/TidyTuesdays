@@ -1,0 +1,59 @@
+---
+title: "2021_03_02"
+author: "Hannah Mandell"
+date: "3/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidytuesdayR)
+#install.packages('tuber')
+library(tuber)
+library(rvest)
+library(httr)
+#install.packages('ggforce')
+library(ggforce)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-03-02')
+```
+
+```{r}
+youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
+```
+
+```{r cleaning}
+write.csv(youtube, "youtube.csv")
+```
+
+#Creating a Parallel Sets DIagram
+
+```{r}
+youtube_table <- youtube %>%
+  mutate(Funny = ifelse(funny, "funny", "not funny"), 
+         Animals = ifelse(animals, "animals", "no animals"),
+         Sex = ifelse(use_sex, "uses sex", "no sex"),
+         Brand = brand) %>%
+  select(brand, funny, animals, use_sex) %>%
+  table()
+
+data <- reshape2::melt(youtube_table)
+data <- gather_set_data(data, 1:4)
+
+data %>%
+  mutate(x = fct_relevel(x, "Brand", "Animals", "Funny", "Sex")) %>%
+  mutate(labelangle = ifelse(x == 'brand', 0, 90)) %>%
+ggplot(aes(x, id = id, split = y, value = value, color = brand, fill = brand)) +
+  #geom_parallel_sets(aes(fill = brand), alpha = 0.3, axis.width = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1, color = 'lightgrey', fill = 'white') +
+  geom_parallel_sets_labels(aes(angle = labelangle) + #color = 'black')+
+  geom_parallel_sets(aes(color = brand, fill = brand,), alpha = 0.3, axis.width = 0.1) +
+  theme(legend.position = 'none', axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank())
+```
+
+
