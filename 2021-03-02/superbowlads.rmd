@@ -31,7 +31,7 @@ youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/ti
 write.csv(youtube, "youtube.csv")
 ```
 
-#Creating a Parallel Sets DIagram
+#Creating a Parallel Sets Diagram
 
 ```{r}
 youtube_table <- youtube %>%
@@ -51,7 +51,7 @@ data %>%
 ggplot(aes(x, id = id, split = y, value = value, color = brand, fill = brand)) +
   #geom_parallel_sets(aes(fill = brand), alpha = 0.3, axis.width = 0.1) +
   geom_parallel_sets_axes(axis.width = 0.1, color = 'lightgrey', fill = 'white') +
-  geom_parallel_sets_labels(aes(angle = labelangle) + #color = 'black')+
+  geom_parallel_sets_labels(aes(angle = labelangle)) + #color = 'black')+
   geom_parallel_sets(aes(color = brand, fill = brand,), alpha = 0.3, axis.width = 0.1) +
   theme(legend.position = 'none', axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank())
 ```
