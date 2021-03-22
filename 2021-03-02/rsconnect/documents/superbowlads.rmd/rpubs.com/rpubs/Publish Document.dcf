@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/733149/7ad740c67df243e48986683ba64e8027
+bundleId: https://api.rpubs.com/api/v1/document/733149/7ad740c67df243e48986683ba64e8027
+url: http://rpubs.com/hfmandell/733149
+when: 1616444432.44369
