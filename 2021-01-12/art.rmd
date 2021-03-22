@@ -11,7 +11,7 @@ The data today come from the Tate Art Gallery
 (https://github.com/tategallery/collection)
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
@@ -150,6 +150,12 @@ We see that the relative proportion of female artwork increases as we turn towar
 Let's explore a RFM. 
 
 ```{r}
+#install.packages('ranger')
+```
+
+
+```{r}
+
 set.seed(47)
 library(tidymodels)
 library(vip)
