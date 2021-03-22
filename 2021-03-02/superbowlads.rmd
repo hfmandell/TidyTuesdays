@@ -1,12 +1,14 @@
 ---
-title: "2021_03_02"
+title: "Superbowl Ads, Youtube Data"
 author: "Hannah Mandell"
 date: "3/2/2021"
 output: html_document
 ---
 
+Done with the lovely, Prof. Jo Hardin!
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
@@ -33,7 +35,9 @@ youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/ti
 write.csv(youtube, "youtube.csv")
 ```
 
-#Creating a Parallel Sets Diagram
+Creating a Parallel Sets Diagram
+
+Do different factors of superbowl ads go hand in hand? Would we expect patriotic commercials to use celebrity appearances more often? Let's explore these relationships in a parallel sets diagram:
 
 ```{r}
 yt_table <- youtube %>%
