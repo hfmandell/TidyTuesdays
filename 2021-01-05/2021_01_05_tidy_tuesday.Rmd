@@ -1,31 +1,20 @@
 ---
-title: '2020-01-05'
-output: pdf_document
+title: 'Transit'
+output: html_document
 date: '2021-01-05'
 ---
 
-# TidyTuesday
-
-Join the R4DS Online Learning Community in the weekly #TidyTuesday event!
-Every week we post a raw dataset, a chart or article related to that dataset, and ask you to explore the data.
-While the dataset will be “tamed”, it will not always be tidy! As such you might need to apply various R for Data Science techniques to wrangle the data into a true tidy format.
-The goal of TidyTuesday is to apply your R skills, get feedback, explore other’s work, and connect with the greater #RStats community!
-As such we encourage everyone of all skills to participate!
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
-
 library(tidyverse)
 library(tidytuesdayR)
 library(lubridate)
 library(dplyr)
 library(tidyr)
 #install.packages("countrycode")
-
-
 ```
 
 # Load the weekly Data
@@ -33,26 +22,10 @@ library(tidyr)
 Dowload the weekly data and make available in the `tt` object.
 
 ```{r Load}
-# download the data
-tt <- tt_load("2021-01-05")
-
-#saving the data as a variable
-transit <- tt$'transit_cost'
+transit <- readr::read_csv("transit_cost.csv")
 
 ```
 
-
-# Readme
-
-Take a look at the readme for the weekly data to get insight on the dataset.
-This includes a data dictionary, source, and a link to an article on the data.
-
-```{r Readme, eval = interactive()}
-
-readme(tt)
-print(tt)
-
-```
 
 
 # Glimpse Data
@@ -61,7 +34,7 @@ Take an initial look at the format of the data available.
 
 ```{r Glimpse}
 
-tt %>% 
+transit %>% 
   map(glimpse)
 
 head(transit)
@@ -126,24 +99,31 @@ table(transit$rr)
 ```
 
 ```{r}
-# figure out how to replace 'country' with 'region' by using the 'countrycode' package
 transit %>%
-  ggplot(aes(x = length, y = real_cost, color = country)) + 
-  geom_point()
+  mutate(real_cost = as.numeric(real_cost), start_year = as.numeric(start_year)) %>%
+  filter(!is.na(line)) %>%
+  mutate(region = countrycode(country, origin = "ecb", 
+                                    destination = "region")) %>%
+  mutate(region = case_when(country == "UK" ~ "Europe & Central Asia",
+                            TRUE ~ region)) %>%
+  ggplot(aes(x = length, y = real_cost, color = region) )+ 
+  geom_point() 
 ```
 
-
-
 ```{r}
-# run this once we figure out the conuntrycode package!!!
-#transit %>%
-  #ggplot(aes(y = real_cost, x = region, color = region)) + 
-  #geom_boxplot() 
+transit %>%
+  mutate(real_cost = as.numeric(real_cost), start_year = as.numeric(start_year)) %>%
+  filter(!is.na(line)) %>%
+  mutate(region = countrycode(country, origin = "ecb", 
+                                    destination = "region")) %>%
+  mutate(region = case_when(country == "UK" ~ "Europe & Central Asia",
+                            TRUE ~ region)) %>%
+  ggplot(aes(y = real_cost, x = region, color = region)) + 
+  geom_boxplot() 
 ```
 
 
 ```{r}
 library(knitr)
-#knit('2021_01_05_tidy_tuesday.Rmd', encoding = 'UTF-8')
 ```
 

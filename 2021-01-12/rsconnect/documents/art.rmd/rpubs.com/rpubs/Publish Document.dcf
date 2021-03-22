@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/712880/245709863faa4942a83e7ae0380fabaa
+bundleId: https://api.rpubs.com/api/v1/document/712880/245709863faa4942a83e7ae0380fabaa
+url: http://rpubs.com/hfmandell/712880/edit
+when: 1616445331.73548
