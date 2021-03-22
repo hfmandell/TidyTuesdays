@@ -52,11 +52,9 @@ write.csv(transit, "transit_cost.csv", )
 
 transit <- readr::read_csv("transit_cost.csv")  %>% 
   mutate(real_cost = as.numeric(real_cost), start_year = as.numeric(start_year)) %>%
-  filter(!is.na(line)) # %>%
-  
-  # mutate(region = countrycode(country, origin = "ecb", destination = "region")) %>%
-  # mutate(region = case_when(country == "UK" ~ "Europe & Central Asia", TRUE ~ region))
-
+  filter(!is.na(line)) %>%
+  mutate(region = countrycode(country, origin = "ecb", destination = "region")) %>%
+  mutate(region = case_when(country == "UK" ~ "Europe & Central Asia", TRUE ~ region))
 ```
 
 ```{r}
@@ -100,24 +98,12 @@ table(transit$rr)
 
 ```{r}
 transit %>%
-  mutate(real_cost = as.numeric(real_cost), start_year = as.numeric(start_year)) %>%
-  filter(!is.na(line)) %>%
-  mutate(region = countrycode(country, origin = "ecb", 
-                                    destination = "region")) %>%
-  mutate(region = case_when(country == "UK" ~ "Europe & Central Asia",
-                            TRUE ~ region)) %>%
   ggplot(aes(x = length, y = real_cost, color = region) )+ 
   geom_point() 
 ```
 
 ```{r}
 transit %>%
-  mutate(real_cost = as.numeric(real_cost), start_year = as.numeric(start_year)) %>%
-  filter(!is.na(line)) %>%
-  mutate(region = countrycode(country, origin = "ecb", 
-                                    destination = "region")) %>%
-  mutate(region = case_when(country == "UK" ~ "Europe & Central Asia",
-                            TRUE ~ region)) %>%
   ggplot(aes(y = real_cost, x = region, color = region)) + 
   geom_boxplot() 
 ```
