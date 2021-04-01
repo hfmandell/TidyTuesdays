@@ -37,7 +37,7 @@ The simplest way is to use the ‘tt_load()’ function. This function has accep
 ```{r load data}
 library(tidytuesdayR)
 # insert desired date
-tt_data <- tt_load("2021-01-26")
+tt_data <- tt_load("2021-03-30")
 
 # or you can use this method:
 tt_data <- tt_load(2019, week = 3)
@@ -75,7 +75,7 @@ By default, the template will assume to be using the most recent TidyTuesday. Ho
 tidytuesdayR::use_tidytemplate()
 
 ## TidyTuesday from Week 42 of 2019
-tidytuesdayR::use_tidytemplate(refdate = "2021-01-26")
+tidytuesdayR::use_tidytemplate(refdate = "2021-03-30")
 ```
 
 Additionally, by default the template will create the new file in your working directory, using the “YYYY_MM_DD” format per good practices. However, if you are so inclined, you can rename it to whatever you wish.
