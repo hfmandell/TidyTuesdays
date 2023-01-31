@@ -1,0 +1,100 @@
+---
+title: "Pet Cats UK"
+author: "Hannah Mandell"
+date: "2023-01-31"
+output: html_document
+---
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Install Packages
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(broom)
+library(lubridate)
+library(tidytuesdayR)
+library(here)
+library(janitor)
+library(sf)
+library(ggplot2)
+library(leaflet)
+```
+
+
+```{r}
+# Get the Data
+
+# Read in with tidytuesdayR package 
+# Install from CRAN via: install.packages("tidytuesdayR")
+# This loads the readme and all the datasets for the week of interest
+
+# Either ISO-8601 date or year/week works!
+
+tuesdata <- tidytuesdayR::tt_load('2023-01-31')
+```
+
+```{r}
+cats_uk <- tuesdata$cats_uk
+cats_uk_reference <- tuesdata$cats_uk_reference
+```
+
+# Exploring the Data
+
+```{r}
+view(cats_uk)
+```
+Notes:
+- Looks like the timestamp goes off every 7 minutes. Wait, just kidding, the timestaps are erratic.
+- 
+
+```{r}
+cats_uk %>%
+  group_by(tag_id) %>%
+  summarize(n())
+
+cat_names <- 
+  cats_uk %>%
+  group_by(tag_id) %>%
+  summarize(n())
+
+cat_names
+```
+
+Teddy seems to have a ton of data. Let's explore his movement!
+
+```{r}
+cats_uk %>%
+  filter(tag_id=="Teddy-Tag")
+```
+
+Teddy Data
+
+```{r}
+teddy <- 
+  cats_uk %>%
+  filter(tag_id=="Teddy-Tag")
+
+teddy_ref <- 
+  cats_uk_reference %>%
+  filter(tag_id=="Teddy-Tag")
+
+teddy_ref; teddy
+```
+
+Let's try to plot Teddy's movement over time and space. 
+
+```{r}
+UK <- map_data(map= "world", region = "UK")
+UK %>%
+  ggplot(aes(x=long, y = lat)) + 
+  geom_polygon() + 
+  coord_map() + 
+  geom_point(data = teddy, aes(x=location_long, y= location_lat), color = "blue")
+```
+
+
+
+Oops, that's way too much of the UK. We should focus in on where Teddy is hanging out. 
+
